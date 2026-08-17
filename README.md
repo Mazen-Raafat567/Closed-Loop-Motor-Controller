@@ -6,7 +6,6 @@ A real-time control system designed to regulate the speed of a 12V DC motor. Thi
 
 *Click the image above to watch the full system demonstration on YouTube.*
 
-
 ## 2. Control System Architecture & Signal Processing
 * **The Plant:** 12V DC Motor driven by an L298N H-Bridge (PWM actuation).
 * **Feedback Loop & Noise Rejection:** Speed is measured using an optical photo-encoder disk via hardware interrupts. Photo-encoders inherently suffer from optical jitter and slot-edge transition bounce, which create microsecond timing glitches that translate into mathematically impossible RPM spikes out of the motor's capabilities (e.g., instant jumps to >300 RPM).
@@ -18,6 +17,8 @@ A real-time control system designed to regulate the speed of a 12V DC motor. Thi
   * **Deadband Filter:** Eliminating steady-state hunting near the setpoint ($\pm 3\text{ RPM}$).
   * **Kinetic Kickstart:** A temporary feed-forward PWM burst to overcome static breakaway friction before the PI loop takes over.
 
+![Encoder & Motor Interface Close-up](project_1.jpg)
+
 ## 3. Embedded Firmware & Safety Operations
 While the core emphasis remains on control theory, efficient embedded architecture supports the control loop's timing integrity:
 * **Periodic Cooperative Scheduler:** A non-blocking `50ms` timer loop ensures that control math and signal filtering execute strictly at $20\text{Hz}$ without using delaying sleep functions.
@@ -27,10 +28,13 @@ While the core emphasis remains on control theory, efficient embedded architectu
 
 ## 4. Telemetry & Validation
 To validate the control logic, the microcontroller streams live telemetry to Simulink.
+
+![Simulink HIL Receiver Model](simulink_diagram.png)
+
 * **Synchronized Fixed-Step Solver:** Simulink is configured with a `0.05s` discrete solver, locking it to the MCU's control loop frequency to prevent frame drops or buffer overruns.
 * **Step Response & Tuning:** The system was tuned ($K_p = 0.2$, $K_i = 0.8$) under dynamic setpoint changes, demonstrating fast rise time with near-zero overshoot and robust disturbance rejection.
 
-![Step Response Plot](image_e70a75.png)
+![Step Response Plot](Step_Response.png)
 
 ## 5. Future Roadmap
 Planned upgrades to align the system closer to Formula SAE powertrain standards:
