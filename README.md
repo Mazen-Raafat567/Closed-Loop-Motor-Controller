@@ -17,7 +17,7 @@ A real-time control system designed to regulate the speed of a 12V DC motor. Thi
   * **Deadband Filter:** Eliminating steady-state hunting near the setpoint ($\pm 3\text{ RPM}$).
   * **Kinetic Kickstart:** A temporary feed-forward PWM burst to overcome static breakaway friction before the PI loop takes over.
 
-![Encoder & Motor Interface Close-up]()
+![Encoder & Motor Interface Close-up](project_1.jpg)
 
 ## 3. Embedded Firmware & Safety Operations
 While the core emphasis remains on control theory, efficient embedded architecture supports the control loop's timing integrity:
