@@ -1,48 +1,229 @@
-# Closed-Loop DC Motor Controller with Real-Time MATLAB/Simulink Telemetry
+# Closed-Loop DC Motor Controller
 
-## 1. Project Overview
-A real-time control system designed to regulate the speed of a 12V DC motor. This project focuses on applied control theory, utilizing a custom discrete PI controller running on an Arduino, backed by signal processing routines to clean physical sensor noise, and streaming high-speed binary telemetry to MATLAB/Simulink for performance validation and step-response analysis.
-[![Hardware Testbench Demo](https://img.youtube.com/vi/2M7MMjlisRw/hqdefault.jpg)](https://www.youtube.com/watch?v=2M7MMjlisRw)
+An Arduino-based closed-loop DC motor speed controller using encoder feedback, PI control, safety interlocks, and real-time MATLAB/Simulink telemetry.
 
-*Click the image above to watch the full system demonstration on YouTube.*
+## Overview
 
-## 2. Control System Architecture & Signal Processing
-* **The Plant:** 12V DC Motor driven by an L298N H-Bridge (PWM actuation).
-* **Feedback Loop & Noise Rejection:** Speed is measured using an optical photo-encoder disk via hardware interrupts. Photo-encoders inherently suffer from optical jitter and slot-edge transition bounce, which create microsecond timing glitches that translate into mathematically impossible RPM spikes out of the motor's capabilities (e.g., instant jumps to >300 RPM).
-  * **Rolling Period Buffer:** To stabilize raw interrupt measurements, pulse interval times are pushed into a 4-sample circular buffer (`periodSum`), averaging out single-pulse anomalies.
-  * **Outlier / Spike Rejection:** Incoming pulse intervals are validated against a delta-time sanity threshold (rejecting pulse-to-pulse intervals corresponding to impossible angular acceleration).
-  * **EMA Low-Pass Filter:** The buffered RPM is passed through an Exponential Moving Average filter ($y[k] = 0.6 \cdot y[k-1] + 0.4 \cdot x[k]$) to eliminate remaining high-frequency noise before feeding the controller.
-* **The Controller:** A deterministic 20Hz discrete PI control algorithm ($dt = 0.05\text{s}$) featuring:
-  * **Integral limiting:** Bounds the accumulated integral term to prevent excessive integral buildup.
-  * **Deadband Filter:** Eliminating steady-state hunting near the setpoint ($\pm 3\text{ RPM}$).
-  * **Kinetic Kickstart:** A temporary feed-forward PWM burst to overcome static breakaway friction before the PI loop takes over.
+The system regulates DC motor speed using a 20-slot optical encoder and a discrete PI controller.
 
-![Encoder & Motor Interface Close-up](project_1.jpg)
+```text
+Throttle → Target RPM → PI Controller → PWM → L298N → Motor
+                                      ↑              ↓
+                                      └── Encoder ───┘
+```
 
-## 3. Embedded Firmware & Safety Operations
-While the core emphasis remains on control theory, efficient embedded architecture supports the control loop's timing integrity:
-* **Periodic Cooperative Scheduler:** A non-blocking `50ms` timer loop ensures that control math and signal filtering execute strictly at $20\text{Hz}$ without using delaying sleep functions.
-* **Atomic Memory Protection:** Disables interrupts (`noInterrupts()`) briefly during multi-byte period buffer reads to prevent variable corruption during high-speed pulse capture.
-* **High-Speed Binary Telemetry:** Control data is packed into a lightweight 16-byte binary payload using raw memory pointer casting `(uint8_t*)`. This eliminates ASCII conversion overhead (`Serial.print`), preventing CPU bottlenecks and serial buffer backpressure.
-* **Operational Safety Interlocks:** Features a software E-Stop interrupt, a mandatory zero-throttle reset interlock on startup, and dynamic back-EMF protection during direction changes.
+MATLAB/Simulink is used for real-time telemetry and performance visualization.
 
-## 4. Telemetry & Validation
-To validate the control logic, the microcontroller streams live telemetry to Simulink.
+### Project Demonstration
 
-![Simulink HIL Receiver Model](simulink_diagram.png)
+[![Watch the Project Demonstration](https://img.youtube.com/vi/2M7MMjlisRw/hqdefault.jpg)](https://www.youtube.com/watch?v=2M7MMjlisRw)
 
-* **Synchronized Fixed-Step Solver:** Simulink is configured with a `0.05s` discrete solver, locking it to the MCU's control loop frequency to prevent frame drops or buffer overruns.
-* **Step Response & Tuning:** The system was tuned ($K_p = 0.2$, $K_i = 0.8$) under dynamic setpoint changes, demonstrating fast rise time with near-zero overshoot and robust disturbance rejection.
+*Click the image to watch the full project demonstration.*
 
-![Step Response Plot](Step_Response.png)
+## Hardware
 
-## 5. Future Roadmap
-Planned upgrades to align the system closer to Formula SAE powertrain standards:
-* **Physical Power Isolation (Hardware E-Stop):** Upgrading the software-flag E-Stop to a physical high-side relay/MOSFET disconnect to isolate motor power directly at the hardware layer.
-* **Full Plant Simulation in Simulink (Full HIL):** Evolving the setup so that Simulink mathematically models the motor's electrical and mechanical transfer function (the plant), while the Arduino acts purely as the hardware ECU, processing virtual inputs and sending real-time actuation signals over the link.
+- Arduino Uno
+- Yellow TT geared DC motor
+- L298N H-bridge driver
+- 9 V DC motor supply
+- 20-slot optical encoder
+- 16×2 I²C LCD
+- Potentiometer
+- Direction pushbutton
+- Emergency-stop pushbutton + LED
 
-## 6. How to Run
-1. Flash the `motor_control.ino` file to the Arduino.
-2. Open `telemetry_model.slx` in Simulink and configure the `Serial Receive` COM port.
-3. Ensure the physical potentiometer is zeroed (Throttle Interlock Safety).
-4. Run the Simulink simulation and adjust the throttle to observe real-time tracking.
+
+## Control System
+
+### PI Controller
+
+The controller runs at a nominal **20 Hz** update rate and uses the measured timestep `dt`.
+
+Features include:
+
+- Proportional + integral speed control
+- Integral limiting
+- Small error deadband
+- Dynamic kick-start for starting from rest
+- Minimum active PWM
+
+### Encoder Processing
+
+The encoder signal is processed using:
+
+- Interrupt-based pulse timing
+- 20 pulses/revolution
+- Minimum pulse-period plausibility check
+- Four-sample rolling period average
+- Exponential moving-average RPM filter
+
+An **11 ms minimum pulse period** is currently used. This rejects pulse intervals corresponding to speeds above approximately 273 RPM, above the motor's experimentally observed operating range.
+
+## Encoder Noise Investigation
+
+During testing, unrealistic RPM spikes were traced to occasional false encoder edges.
+
+The issue was isolated by:
+
+1. Running the motor at fixed PWM with PI control disabled.
+2. Examining encoder pulse periods directly.
+3. Counting rejected pulse intervals.
+4. Testing different pulse-period thresholds.
+5. Reducing wire lengths and improving wiring layout.
+
+The results showed that motor operating conditions and wiring affected the encoder signal, highlighting the importance of signal integrity and electrical noise management in closed-loop motor control.
+
+## Safety Features
+
+- **Software E-stop:** Interrupt-triggered latched shutdown that commands PWM to zero.
+- **Throttle interlock:** Motor cannot start until the throttle is first returned to zero.
+- **Direction interlock:** Direction cannot change until motor speed is sufficiently low.
+- **Kick-start control:** Separates starting behavior from normal PI control.
+
+> The current E-stop is software-based and does not provide hardware power isolation. A hardware shutdown path is planned for future development.
+
+## MATLAB / Simulink
+
+Real-time telemetry is transmitted from the Arduino to MATLAB/Simulink using a binary frame:
+
+- 2-byte synchronization header
+- 5 × 32-bit floating-point values
+- **22 bytes total per frame**
+
+Telemetry includes:
+
+- Encoder period
+- Motor PWM
+- Target RPM
+- Filtered RPM
+- Speed error
+
+The Simulink model uses a **0.05 s fixed-step sample time** matching the nominal controller update rate.
+
+![Simulink Telemetry](simulink_diagram.png)
+
+## Results
+
+The controller was tuned using experimental step-response tests and demonstrated stable speed tracking under the tested conditions.
+
+![Step Response](Step_Response.png)
+
+## Project Structure
+
+```text
+Closed-Loop-Motor-Controller/
+├── Motor_Control_Final.ino
+├── Motor_Control_Simulink.slx
+├── README.md
+├── Step_Response.png
+├── project_1.jpg
+├── project_2.jpg
+└── simulink_diagram.png
+```
+
+## Future Improvements
+
+- Hardware-level E-stop and power isolation
+- Improved encoder signal conditioning
+- Motor-noise suppression and better decoupling
+- Higher-resolution encoder
+- Quantitative control metrics such as rise time, settling time, overshoot, and disturbance recovery
+- True hardware-in-the-loop testing with a Simulink motor plant
+
+## Skills Demonstrated
+
+- Closed-loop motor control
+- PI control
+- Embedded C/C++
+- Interrupts and PWM
+- Encoder-based speed measurement
+- Signal filtering and validation
+- Safety interlocks
+- Serial telemetry
+- MATLAB/Simulink
+- Hardware debugging
+- Electrical noise / signal-integrity investigation
+
+## FSAE Relevance
+
+This project provided practical experience with concepts directly relevant to automotive motor-control systems:
+
+- Feedback control
+- Sensor processing
+- Embedded real-time software
+- Motor actuation
+- Signal integrity
+- Fault handling
+- Safety architecture
+- MATLAB/Simulink validation
+
+## How to Run
+
+### 1. Hardware Setup
+
+Connect the system according to the pin mapping above.
+
+- Power the motor through the L298N using the external motor supply.
+- Power the Arduino and encoder from the appropriate Arduino supply.
+- Connect the Arduino, L298N, and encoder grounds together.
+- Make sure the throttle is at zero before powering the system.
+
+### 2. Arduino Firmware
+
+Open:
+
+```text
+Motor_Control_Final.ino
+```
+
+Install the required Arduino libraries:
+
+- `Wire`
+- `LiquidCrystal_I2C`
+
+Select:
+
+```text
+Board: Arduino Uno
+```
+
+Select the correct COM port and upload the firmware.
+
+### 3. Serial Communication
+
+The firmware uses:
+
+```text
+Baud rate: 115200
+```
+
+Make sure any serial monitoring or MATLAB/Simulink configuration uses the same baud rate.
+
+### 4. MATLAB / Simulink
+
+Open:
+
+```text
+Motor_Control_Simulink.slx
+```
+
+Configure the serial interface for the Arduino's COM port.
+
+The model expects telemetry at the controller's nominal:
+
+```text
+Sample time: 0.05 s
+```
+
+Start the Simulink model and verify that telemetry such as target RPM, filtered RPM, PWM, and error is being received.
+
+### 5. Operating the Controller
+
+1. Power the system with the throttle at zero.
+2. Confirm that the startup throttle interlock is cleared.
+3. Set the desired direction.
+4. Gradually increase the throttle.
+5. Monitor RPM and PWM through the LCD and Simulink telemetry.
+6. Use the E-stop whenever an immediate software shutdown is required.
+
+> **Safety:** This is a low-voltage prototype and is not a safety-rated automotive system. The current E-stop is software-based and should not be relied upon as a hardware power-disconnection mechanism.
