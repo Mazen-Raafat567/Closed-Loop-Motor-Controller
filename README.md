@@ -159,71 +159,7 @@ This project provided practical experience with concepts directly relevant to au
 
 ## How to Run
 
-### 1. Hardware Setup
-
-Connect the system according to the pin mapping above.
-
-- Power the motor through the L298N using the external motor supply.
-- Power the Arduino and encoder from the appropriate Arduino supply.
-- Connect the Arduino, L298N, and encoder grounds together.
-- Make sure the throttle is at zero before powering the system.
-
-### 2. Arduino Firmware
-
-Open:
-
-```text
-Motor_Control_Final.ino
-```
-
-Install the required Arduino libraries:
-
-- `Wire`
-- `LiquidCrystal_I2C`
-
-Select:
-
-```text
-Board: Arduino Uno
-```
-
-Select the correct COM port and upload the firmware.
-
-### 3. Serial Communication
-
-The firmware uses:
-
-```text
-Baud rate: 115200
-```
-
-Make sure any serial monitoring or MATLAB/Simulink configuration uses the same baud rate.
-
-### 4. MATLAB / Simulink
-
-Open:
-
-```text
-Motor_Control_Simulink.slx
-```
-
-Configure the serial interface for the Arduino's COM port.
-
-The model expects telemetry at the controller's nominal:
-
-```text
-Sample time: 0.05 s
-```
-
-Start the Simulink model and verify that telemetry such as target RPM, filtered RPM, PWM, and error is being received.
-
-### 5. Operating the Controller
-
-1. Power the system with the throttle at zero.
-2. Confirm that the startup throttle interlock is cleared.
-3. Set the desired direction.
-4. Gradually increase the throttle.
-5. Monitor RPM and PWM through the LCD and Simulink telemetry.
-6. Use the E-stop whenever an immediate software shutdown is required.
-
-> **Safety:** This is a low-voltage prototype and is not a safety-rated automotive system. The current E-stop is software-based and should not be relied upon as a hardware power-disconnection mechanism.
+1. **Hardware Wiring:** Connect the 9V supply to the L298N driver, common ground all components (Arduino, L298N, encoder), and ensure the potentiometer throttle is set to zero before powering on.
+2. **Flash Firmware:** Open `Motor_Control_Final.ino` in the Arduino IDE (requires `LiquidCrystal_I2C` library), select Arduino Uno and your COM port, and upload (**115200 Baud**).
+3. **Launch Telemetry:** Open `Motor_Control_Simulink.slx` in MATLAB, configure the Serial block to match your Arduino's COM port (`0.05s` sample time, 115200 baud), and press **Run**.
+4. **System Operation:** Advance the potentiometer to clear the safety interlock and command target RPM. Track live feedback on the LCD or Simulink scope, and use the hardware buttons for direction changes or software E-stop.
