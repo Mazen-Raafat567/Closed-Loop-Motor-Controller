@@ -2,9 +2,10 @@
 
 ## 1. Project Overview
 A real-time control system designed to regulate the speed of a 12V DC motor. This project focuses on applied control theory, utilizing a custom discrete PI controller running on an Arduino, backed by signal processing routines to clean physical sensor noise, and streaming high-speed binary telemetry to MATLAB/Simulink for performance validation and step-response analysis.
-[![Hardware Testbench Demo](https://img.youtube.com/vi/u1MtyDbi5y0/hqdefault.jpg)](https://www.youtube.com/watch?v=u1MtyDbi5y0)
+[![Hardware Testbench Demo](https://img.youtube.com/vi/2M7MMjlisRw/hqdefault.jpg)](https://www.youtube.com/watch?v=2M7MMjlisRw)
 
 *Click the image above to watch the full system demonstration on YouTube.*
+
 
 ## 2. Control System Architecture & Signal Processing
 * **The Plant:** 12V DC Motor driven by an L298N H-Bridge (PWM actuation).
