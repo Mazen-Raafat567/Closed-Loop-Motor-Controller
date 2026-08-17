@@ -1,4 +1,4 @@
-# Closed-Loop DC Motor Control & HIL Telemetry System
+# Closed-Loop DC Motor Controller with Real-Time MATLAB/Simulink Telemetry
 
 ## 1. Project Overview
 A real-time control system designed to regulate the speed of a 12V DC motor. This project focuses on applied control theory, utilizing a custom discrete PI controller running on an Arduino, backed by signal processing routines to clean physical sensor noise, and streaming high-speed binary telemetry to MATLAB/Simulink for performance validation and step-response analysis.
@@ -13,7 +13,7 @@ A real-time control system designed to regulate the speed of a 12V DC motor. Thi
   * **Outlier / Spike Rejection:** Incoming pulse intervals are validated against a delta-time sanity threshold (rejecting pulse-to-pulse intervals corresponding to impossible angular acceleration).
   * **EMA Low-Pass Filter:** The buffered RPM is passed through an Exponential Moving Average filter ($y[k] = 0.6 \cdot y[k-1] + 0.4 \cdot x[k]$) to eliminate remaining high-frequency noise before feeding the controller.
 * **The Controller:** A deterministic 20Hz discrete PI control algorithm ($dt = 0.05\text{s}$) featuring:
-  * **Integral Anti-Windup:** Clamping the error integral to prevent actuator saturation and massive overshoot.
+  * **Integral limiting:** Bounds the accumulated integral term to prevent excessive integral buildup.
   * **Deadband Filter:** Eliminating steady-state hunting near the setpoint ($\pm 3\text{ RPM}$).
   * **Kinetic Kickstart:** A temporary feed-forward PWM burst to overcome static breakaway friction before the PI loop takes over.
 
