@@ -32,7 +32,6 @@ MATLAB/Simulink is used for real-time telemetry and performance visualization.
 - Direction pushbutton
 - Emergency-stop pushbutton + LED
 
-
 ## Control System
 
 ### PI Controller
@@ -102,11 +101,20 @@ The Simulink model uses a **0.05 s fixed-step sample time** matching the nominal
 
 ![Simulink Telemetry](simulink_diagram.png)
 
-## Results
+## Step Response Analysis
 
-The controller was tuned using experimental step-response tests and demonstrated stable speed tracking under the tested conditions.
+To objectively verify the controller tuning, the physical potentiometer was temporarily bypassed to command an automated, instantaneous step input from 0 to 150 RPM. The resulting telemetry matrix was exported from Simulink to the MATLAB workspace for quantitative analysis.
 
-![Step Response](Step_Response.png)
+![Step Response Analysis](Step_Response_Analysis.png)
+
+The system demonstrated the following dynamic characteristics during the 150 RPM step test:
+
+- **Rise Time:** 0.850 seconds
+- **Settling Time:** 1.600 seconds
+- **Percent Overshoot:** 2.74%
+- **Steady-State Error:** ~0 RPM
+
+These metrics indicate a stable, slightly underdamped system. Clamping the integral accumulator during the initial hardware kick-start phase prevented integral windup, keeping the overshoot cleanly under 3%. The integral gain successfully drives the steady-state error to zero, with minor RPM variations at steady state attributed to the physical resolution limits of the optical encoder.
 
 ## Project Structure
 
@@ -115,7 +123,7 @@ Closed-Loop-Motor-Controller/
 ├── Motor_Control_Final.ino
 ├── Motor_Control_Simulink.slx
 ├── README.md
-├── Step_Response.png
+├── Step_Response_Analysis.png
 ├── project_1.jpg
 ├── project_2.jpg
 └── simulink_diagram.png
@@ -127,7 +135,7 @@ Closed-Loop-Motor-Controller/
 - Improved encoder signal conditioning
 - Motor-noise suppression and better decoupling
 - Higher-resolution encoder
-- Quantitative control metrics such as rise time, settling time, overshoot, and disturbance recovery
+- Quantitative disturbance recovery testing and load-step analysis
 - True hardware-in-the-loop testing with a Simulink motor plant
 
 ## Skills Demonstrated
@@ -143,19 +151,6 @@ Closed-Loop-Motor-Controller/
 - MATLAB/Simulink
 - Hardware debugging
 - Electrical noise / signal-integrity investigation
-
-## FSAE Relevance
-
-This project provided practical experience with concepts directly relevant to automotive motor-control systems:
-
-- Feedback control
-- Sensor processing
-- Embedded real-time software
-- Motor actuation
-- Signal integrity
-- Fault handling
-- Safety architecture
-- MATLAB/Simulink validation
 
 ## How to Run
 
