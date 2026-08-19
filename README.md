@@ -99,13 +99,13 @@ Telemetry includes:
 
 The Simulink model uses a **0.05 s fixed-step sample time** matching the nominal controller update rate.
 
-![Simulink Telemetry](simulink_diagram_1.png)
+![Simulink Telemetry](assets/simulink_diagram_1.png)
 
 ## Step Response Analysis
 
 To objectively verify the controller tuning, the physical potentiometer was temporarily bypassed to command an automated, instantaneous step input from 0 to 150 RPM. The resulting telemetry matrix was exported from Simulink to the MATLAB workspace for quantitative analysis.
 
-![Step Response Analysis](Step_Response.png)
+![Step Response Analysis](assets/Step_Response.png)
 
 The system demonstrated the following dynamic characteristics during the 150 RPM step test:
 
