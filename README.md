@@ -103,7 +103,9 @@ The Simulink model uses a **0.05 s fixed-step sample time** matching the nominal
 
 ## Step Response Analysis
 
-To objectively evaluate the controller, the physical potentiometer was temporarily bypassed and the target speed was commanded with an automated step from **0 to 150 RPM**. The resulting telemetry was exported from Simulink to MATLAB for quantitative analysis.
+To objectively evaluate the controller, the physical potentiometer was temporarily bypassed and the target speed was commanded with an automated **step from 0 to 150 RPM**.
+
+The response was evaluated using a **3% settling band** around the final target value. The resulting telemetry was exported from Simulink to MATLAB for quantitative analysis.
 
 ![Step Response Analysis](assets/Step_Response.png)
 
@@ -112,6 +114,7 @@ The measured response was:
 - **Rise Time:** 0.850 s
 - **Settling Time:** 1.600 s
 - **Percent Overshoot:** 2.74%
+- **Settling Band:** ±3% of the 150 RPM target
 
 The response shows stable closed-loop tracking with a small amount of overshoot and bounded steady-state variation. The remaining RPM variation is mainly attributed to encoder measurement resolution and the characteristics of the physical motor and gearbox.
 
@@ -119,11 +122,9 @@ The response shows stable closed-loop tracking with a small amount of overshoot 
 
 ```text
 Closed-Loop-Motor-Controller/
-├── firmware/
-│   └── Motor_Control_Final.ino
-├── simulink/
-│   └── Motor_Control_Simulink.slx
-├── matlab/
+├── code/
+│   ├── Motor_Control_Final.ino
+│   ├── Motor_Control_Simulink.slx
 │   └── save_data.m
 ├── assets/
 │   ├── Step_Response.png
@@ -153,69 +154,23 @@ Closed-Loop-Motor-Controller/
 
 ## How to Run
 
-### 1. Hardware Setup
+### 1. Hardware
 
-Connect the system according to the hardware configuration.
+Connect the Arduino, L298N, motor, encoder, potentiometer, LCD, and buttons according to the project wiring. Use a common ground and keep the throttle at zero before startup.
 
-- Connect the 9 V motor supply to the L298N.
-- Connect the L298N motor outputs to the TT motor.
-- Connect Arduino GND, L298N GND, and encoder GND together.
-- Connect the encoder, potentiometer, buttons, and LCD to the Arduino.
-- Ensure the potentiometer is at zero before powering the system.
+### 2. Arduino
 
-### 2. Arduino Firmware
+Open `code/Motor_Control_Final.ino`, install `LiquidCrystal_I2C`, select **Arduino Uno** and the correct COM port, then upload the firmware.
 
-Open:
+### 3. MATLAB / Simulink
+
+Open `code/Motor_Control_Simulink.slx` and configure the Arduino's COM port with:
 
 ```text
-firmware/Motor_Control_Final.ino
+115200 baud
+0.05 s sample time
 ```
 
-Install the required Arduino library:
-
-- `LiquidCrystal_I2C`
-
-Then:
-
-1. Select **Arduino Uno** as the board.
-2. Select the correct COM port.
-3. Upload the firmware.
-4. Keep the throttle at zero during startup to clear the throttle interlock.
-
-### 3. MATLAB / Simulink Telemetry
-
-Open:
-
-```text
-simulink/Motor_Control_Simulink.slx
-```
-
-Configure the serial connection for the Arduino's COM port using:
-
-```text
-Baud rate: 115200
-Sample time: 0.05 s
-```
-
-Start the Simulink model and verify that target RPM, filtered RPM, PWM, encoder period, and error are being received.
-
-### 4. MATLAB Step-Response Analysis
-
-The MATLAB analysis script is located at:
-
-```text
-matlab/save_data.m
-```
-
-Use the exported Simulink telemetry to generate the step-response data and calculate the controller performance metrics.
-
-### 5. Operating the Controller
-
-1. Power the system with the throttle at zero.
-2. Confirm that the startup interlock has been cleared.
-3. Select the desired direction.
-4. Gradually increase the throttle.
-5. Monitor RPM and PWM using the LCD or Simulink telemetry.
-6. Use the E-stop for an immediate software shutdown.
+Run the model to monitor the controller telemetry.
 
 > **Safety:** This is a low-voltage prototype and is not a safety-rated automotive system. The current E-stop is software-based and should not be relied upon as a hardware power-disconnection mechanism.
