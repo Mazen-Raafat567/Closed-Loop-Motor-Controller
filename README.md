@@ -16,7 +16,7 @@ MATLAB/Simulink is used for real-time telemetry and performance visualization.
 
 ### Project Demonstration
 
-[![Watch the Project Demonstration](https://img.youtube.com/vi/2M7MMjlisRw/hqdefault.jpg)](https://www.youtube.com/watch?v=2M7MMjlisRw)
+[![Watch the Project Demonstration](https://img.youtube.com/vi/Vs8Mu4jvZHY/hqdefault.jpg)](https://www.youtube.com/watch?v=Vs8Mu4jvZHY)
 
 *Click the image to watch the full project demonstration.*
 
