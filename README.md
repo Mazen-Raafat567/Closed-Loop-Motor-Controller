@@ -121,11 +121,12 @@ These metrics indicate a stable, slightly underdamped system. Clamping the integ
 Closed-Loop-Motor-Controller/
 ├── Motor_Control_Final.ino
 ├── Motor_Control_Simulink.slx
+├── save_data.m
 ├── README.md
-├── Step_Response_Analysis.png
+├── Step_Response.png
 ├── project_1.jpg
 ├── project_2.jpg
-└── simulink_diagram.png
+└── simulink_diagram_1.png
 ```
 
 ## Future Improvements
