@@ -99,7 +99,7 @@ Telemetry includes:
 
 The Simulink model uses a **0.05 s fixed-step sample time** matching the nominal controller update rate.
 
-![Simulink Telemetry]()
+![Simulink Telemetry](simulink_diagram_1.png)
 
 ## Step Response Analysis
 
@@ -112,7 +112,6 @@ The system demonstrated the following dynamic characteristics during the 150 RPM
 - **Rise Time:** 0.850 seconds
 - **Settling Time:** 1.600 seconds
 - **Percent Overshoot:** 2.74%
-- **Steady-State Error:** ~0 RPM
 
 These metrics indicate a stable, slightly underdamped system. Clamping the integral accumulator during the initial hardware kick-start phase prevented integral windup, keeping the overshoot cleanly under 3%. The integral gain successfully drives the steady-state error to zero, with minor RPM variations at steady state attributed to the physical resolution limits of the optical encoder.
 
@@ -138,19 +137,13 @@ Closed-Loop-Motor-Controller/
 - Quantitative disturbance recovery testing and load-step analysis
 - True hardware-in-the-loop testing with a Simulink motor plant
 
-## Skills Demonstrated
+## Core Competencies Demonstrated
 
-- Closed-loop motor control
-- PI control
-- Embedded C/C++
-- Interrupts and PWM
-- Encoder-based speed measurement
-- Signal filtering and validation
-- Safety interlocks
-- Serial telemetry
-- MATLAB/Simulink
-- Hardware debugging
-- Electrical noise / signal-integrity investigation
+- **Control Systems Engineering:** Tuned a closed-loop PI controller to eliminate steady-state error and optimized step-response dynamics (rise time, overshoot, and settling time).
+- **Real-Time Embedded Firmware:** Developed non-blocking, interrupt-driven C/C++ architecture to manage precise hardware timing without halting the main control loop.
+- **Sensor Signal Processing:** Implemented exponential moving-average filters and logic-based anomaly rejection to extract clean RPM data from noisy physical encoder signals.
+- **Telemetry & Data Acquisition:** Engineered a custom binary serial protocol to stream real-time hardware data into MATLAB/Simulink for dynamic analysis.
+- **Fault-Tolerant System Design:** Programmed robust state machines and safety interlocks (e.g., software E-stops, zero-throttle checks) to prevent unpredictable mechanical behavior.
 
 ## How to Run
 
