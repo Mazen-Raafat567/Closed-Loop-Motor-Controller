@@ -12,7 +12,7 @@ Throttle → Target RPM → PI Controller → PWM → L298N → Motor
                                       └── Encoder ───┘
 ```
 
-MATLAB/Simulink is used for real-time telemetry and performance visualization.
+MATLAB/Simulink is used for real-time telemetry and performance analysis.
 
 ### Project Demonstration
 
@@ -103,30 +103,34 @@ The Simulink model uses a **0.05 s fixed-step sample time** matching the nominal
 
 ## Step Response Analysis
 
-To objectively verify the controller tuning, the physical potentiometer was temporarily bypassed to command an automated, instantaneous step input from 0 to 150 RPM. The resulting telemetry matrix was exported from Simulink to the MATLAB workspace for quantitative analysis.
+To objectively evaluate the controller, the physical potentiometer was temporarily bypassed and the target speed was commanded with an automated step from **0 to 150 RPM**. The resulting telemetry was exported from Simulink to MATLAB for quantitative analysis.
 
 ![Step Response Analysis](assets/Step_Response.png)
 
-The system demonstrated the following dynamic characteristics during the 150 RPM step test:
+The measured response was:
 
-- **Rise Time:** 0.850 seconds
-- **Settling Time:** 1.600 seconds
+- **Rise Time:** 0.850 s
+- **Settling Time:** 1.600 s
 - **Percent Overshoot:** 2.74%
 
-These metrics indicate a stable, slightly underdamped system. Clamping the integral accumulator during the initial hardware kick-start phase prevented integral windup, keeping the overshoot cleanly under 3%. The integral gain successfully drives the steady-state error to zero, with minor RPM variations at steady state attributed to the physical resolution limits of the optical encoder.
+The response shows stable closed-loop tracking with a small amount of overshoot and bounded steady-state variation. The remaining RPM variation is mainly attributed to encoder measurement resolution and the characteristics of the physical motor and gearbox.
 
 ## Project Structure
 
 ```text
 Closed-Loop-Motor-Controller/
-├── Motor_Control_Final.ino
-├── Motor_Control_Simulink.slx
-├── save_data.m
-├── README.md
-├── Step_Response.png
-├── project_1.jpg
-├── project_2.jpg
-└── simulink_diagram_1.png
+├── firmware/
+│   └── Motor_Control_Final.ino
+├── simulink/
+│   └── Motor_Control_Simulink.slx
+├── matlab/
+│   └── save_data.m
+├── assets/
+│   ├── Step_Response.png
+│   ├── project_1.jpg
+│   ├── project_2.jpg
+│   └── simulink_diagram_1.png
+└── README.md
 ```
 
 ## Future Improvements
@@ -140,15 +144,78 @@ Closed-Loop-Motor-Controller/
 
 ## Core Competencies Demonstrated
 
-- **Control Systems Engineering:** Tuned a closed-loop PI controller to eliminate steady-state error and optimized step-response dynamics (rise time, overshoot, and settling time).
-- **Real-Time Embedded Firmware:** Developed non-blocking, interrupt-driven C/C++ architecture to manage precise hardware timing without halting the main control loop.
-- **Sensor Signal Processing:** Implemented exponential moving-average filters and logic-based anomaly rejection to extract clean RPM data from noisy physical encoder signals.
-- **Telemetry & Data Acquisition:** Engineered a custom binary serial protocol to stream real-time hardware data into MATLAB/Simulink for dynamic analysis.
-- **Fault-Tolerant System Design:** Programmed robust state machines and safety interlocks (e.g., software E-stops, zero-throttle checks) to prevent unpredictable mechanical behavior.
+- **Closed-Loop Control:** Implemented and tuned a discrete PI controller using measured motor-speed feedback and evaluated its step response using experimental data.
+- **Embedded Systems:** Developed Arduino firmware using interrupts, PWM, timed control updates, and non-blocking program structure.
+- **Sensor Measurement:** Converted encoder pulse timing into RPM and added filtering and plausibility checks to handle noisy measurements.
+- **Control-System Validation:** Used MATLAB/Simulink to collect telemetry and calculate rise time, settling time, and overshoot from physical test data.
+- **Hardware Debugging:** Investigated encoder measurement errors by isolating the controller, analyzing pulse timing, and testing changes to filtering and wiring.
+- **Safety and State Logic:** Implemented startup throttle checking, latched software E-stop behavior, and controlled direction changes.
 
 ## How to Run
 
-1. **Hardware Wiring:** Connect the 9V supply to the L298N driver, common ground all components (Arduino, L298N, encoder), and ensure the potentiometer throttle is set to zero before powering on.
-2. **Flash Firmware:** Open `Motor_Control_Final.ino` in the Arduino IDE (requires `LiquidCrystal_I2C` library), select Arduino Uno and your COM port, and upload (**115200 Baud**).
-3. **Launch Telemetry:** Open `Motor_Control_Simulink.slx` in MATLAB, configure the Serial block to match your Arduino's COM port (`0.05s` sample time, 115200 baud), and press **Run**.
-4. **System Operation:** Advance the potentiometer to clear the safety interlock and command target RPM. Track live feedback on the LCD or Simulink scope, and use the hardware buttons for direction changes or software E-stop.
+### 1. Hardware Setup
+
+Connect the system according to the hardware configuration.
+
+- Connect the 9 V motor supply to the L298N.
+- Connect the L298N motor outputs to the TT motor.
+- Connect Arduino GND, L298N GND, and encoder GND together.
+- Connect the encoder, potentiometer, buttons, and LCD to the Arduino.
+- Ensure the potentiometer is at zero before powering the system.
+
+### 2. Arduino Firmware
+
+Open:
+
+```text
+firmware/Motor_Control_Final.ino
+```
+
+Install the required Arduino library:
+
+- `LiquidCrystal_I2C`
+
+Then:
+
+1. Select **Arduino Uno** as the board.
+2. Select the correct COM port.
+3. Upload the firmware.
+4. Keep the throttle at zero during startup to clear the throttle interlock.
+
+### 3. MATLAB / Simulink Telemetry
+
+Open:
+
+```text
+simulink/Motor_Control_Simulink.slx
+```
+
+Configure the serial connection for the Arduino's COM port using:
+
+```text
+Baud rate: 115200
+Sample time: 0.05 s
+```
+
+Start the Simulink model and verify that target RPM, filtered RPM, PWM, encoder period, and error are being received.
+
+### 4. MATLAB Step-Response Analysis
+
+The MATLAB analysis script is located at:
+
+```text
+matlab/save_data.m
+```
+
+Use the exported Simulink telemetry to generate the step-response data and calculate the controller performance metrics.
+
+### 5. Operating the Controller
+
+1. Power the system with the throttle at zero.
+2. Confirm that the startup interlock has been cleared.
+3. Select the desired direction.
+4. Gradually increase the throttle.
+5. Monitor RPM and PWM using the LCD or Simulink telemetry.
+6. Use the E-stop for an immediate software shutdown.
+
+> **Safety:** This is a low-voltage prototype and is not a safety-rated automotive system. The current E-stop is software-based and should not be relied upon as a hardware power-disconnection mechanism.
