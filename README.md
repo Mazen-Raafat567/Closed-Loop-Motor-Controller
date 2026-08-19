@@ -146,7 +146,7 @@ Closed-Loop-Motor-Controller/
 ## Core Competencies Demonstrated
 
 - **Closed-Loop Control:** Implemented and tuned a discrete PI controller using measured motor-speed feedback and evaluated its step response using experimental data.
-- **Embedded Systems:** Developed Arduino firmware using interrupts, PWM, timed control updates, and non-blocking program structure.
+- **Control Implementation:** Implemented the closed-loop control algorithm in C++ with PWM actuation, interrupt-based feedback measurement, timed control updates, and non-blocking execution.
 - **Sensor Measurement:** Converted encoder pulse timing into RPM and added filtering and plausibility checks to handle noisy measurements.
 - **Control-System Validation:** Used MATLAB/Simulink to collect telemetry and calculate rise time, settling time, and overshoot from physical test data.
 - **Hardware Debugging:** Investigated encoder measurement errors by isolating the controller, analyzing pulse timing, and testing changes to filtering and wiring.
